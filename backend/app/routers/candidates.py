@@ -1,5 +1,6 @@
+from datetime import datetime
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Candidate
@@ -42,13 +43,21 @@ def sync_candidates(submission_type: str = Query(..., pattern="^(tech|nontech)$"
     try:
         submissions = fetch_submissions(submission_type)
     except Exception as e:
-        return {"detail": f"Failed to fetch: {e}"}
+        raise HTTPException(status_code=502, detail=f"Failed to fetch from Zetheta: {e}")
 
+    if not isinstance(submissions, list):
+        raise HTTPException(status_code=502, detail=f"Unexpected response format from Zetheta: {type(submissions)}")
+
+    # Deduplicate by user_id to avoid UNIQUE constraint violations
+    seen = set()
     count = 0
     for sub in submissions:
-        user_id = str(sub.get("user_id", ""))
-        if not user_id:
+        if not isinstance(sub, dict):
             continue
+        user_id = str(sub.get("user_id", ""))
+        if not user_id or user_id == "None" or user_id in seen:
+            continue
+        seen.add(user_id)
 
         cand = db.query(Candidate).filter(
             Candidate.id == user_id,
@@ -66,7 +75,7 @@ def sync_candidates(submission_type: str = Query(..., pattern="^(tech|nontech)$"
         cand.course = sub.get("course")
         cand.college = sub.get("college")
         cand.raw_data = sub
-        cand.last_seen_at = __import__('datetime').datetime.utcnow()
+        cand.last_seen_at = datetime.utcnow()
+        db.commit()  # commit per candidate to avoid batch conflicts
 
-    db.commit()
-    return {"synced": count, "total_fetched": len(submissions)}
+    return {"synced": count, "total_fetched": len(submissions), "unique": len(seen)}

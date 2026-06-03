@@ -12,6 +12,7 @@ export default API;
 // Dashboard
 export const getStats = () => API.get('/dashboard/stats');
 export const getChart = (days = 7) => API.get(`/dashboard/chart?days=${days}`);
+export const getSettings = () => API.get('/settings');
 
 // Jobs
 export const listJobs = () => API.get('/jobs');

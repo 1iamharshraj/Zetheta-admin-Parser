@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { getStats, getChart } from '../api';
+import { getStats, getChart, getSettings } from '../api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { Loader2, CheckCircle, XCircle, Users, Activity } from 'lucide-react';
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [chartData, setChartData] = useState([]);
+  const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,9 +17,10 @@ export default function Dashboard() {
 
   async function loadData() {
     try {
-      const [sRes, cRes] = await Promise.all([getStats(), getChart(7)]);
+      const [sRes, cRes, setRes] = await Promise.all([getStats(), getChart(7), getSettings()]);
       setStats(sRes.data);
       setChartData(cRes.data.data);
+      setSettings(setRes.data);
     } catch (e) {
       console.error(e);
     } finally {
@@ -95,6 +97,37 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
       </div>
+
+      {/* Configured URLs */}
+      {settings && (
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h3 className="text-lg font-semibold mb-4">Configured API URLs</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="text-gray-500 mb-1">Tech Source (Zetheta)</div>
+              <div className="font-mono text-indigo-700 break-all">{settings.source_url_tech}</div>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="text-gray-500 mb-1">Non-Tech Source (Zetheta)</div>
+              <div className="font-mono text-indigo-700 break-all">{settings.source_url_nontech}</div>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="text-gray-500 mb-1">Tech Target (Evalhub)</div>
+              <div className="font-mono text-indigo-700 break-all">{settings.target_url_tech}</div>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="text-gray-500 mb-1">Non-Tech Target (Evalhub)</div>
+              <div className="font-mono text-indigo-700 break-all">{settings.target_url_nontech}</div>
+            </div>
+          </div>
+          <div className="mt-4 flex gap-6 text-sm text-gray-500">
+            <span>Max Concurrent: <strong>{settings.max_concurrent_calls}</strong></span>
+            <span>Delay: <strong>{settings.call_delay_seconds}s</strong></span>
+            <span>Timeout: <strong>{settings.call_timeout_seconds}s</strong></span>
+            <span>Retries: <strong>{settings.max_retries}</strong></span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -98,7 +98,9 @@ export default function Calls() {
                       {call.candidate_email && <div className="text-xs text-gray-500">{call.candidate_email}</div>}
                     </td>
                     <td className="px-4 py-3">
-                      {call.is_success ? (
+                      {!call.completed_at ? (
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">Pending</span>
+                      ) : call.is_success ? (
                         <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Success</span>
                       ) : (
                         <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">Failed</span>
