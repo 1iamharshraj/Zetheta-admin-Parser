@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "sqlite:///./zetheta_admin_v2.db"
+    DATABASE_URL: str = "sqlite:///./zetheta_admin.db"
     SOURCE_URL_TECH: str = "https://www.zetheta.com/wp-json/v1/submissions"
     SOURCE_URL_NONTECH: str = "https://www.zetheta.com/wp-json/v1/submissions/?type=nontech"
     TARGET_URL_TECH: str = "http://13.127.165.204:8000/api/zetheta/analyze"

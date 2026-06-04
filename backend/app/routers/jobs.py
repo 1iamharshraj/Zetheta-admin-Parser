@@ -99,11 +99,27 @@ def stop_job(job_id: str, db: Session = Depends(get_db)):
     return job
 
 
-@router.post("/{job_id}/retry-failed", response_model=JobResponse)
-def retry_failed(job_id: str, db: Session = Depends(get_db)):
+@router.post("/{job_id}/update-timeout", response_model=JobResponse)
+def update_timeout(job_id: str, timeout_seconds: int, db: Session = Depends(get_db)):
     job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
+    # Clamp to 30-300 range
+    job.timeout_seconds = max(30, min(300, timeout_seconds))
+    db.commit()
+    db.refresh(job)
+    return job
+
+
+@router.post("/{job_id}/retry-failed", response_model=JobResponse)
+def retry_failed(job_id: str, timeout_seconds: Optional[int] = None, db: Session = Depends(get_db)):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    # If user passed a new timeout, update it before retrying
+    if timeout_seconds is not None:
+        job.timeout_seconds = max(30, min(300, timeout_seconds))
 
     failed_calls = db.query(APICall).filter(
         APICall.job_id == job_id,

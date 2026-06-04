@@ -8,6 +8,8 @@ export default function Jobs() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: '', type: 'tech', filter_mode: 'all', filter_value: '', timeout_seconds: 90 });
   const [progressMap, setProgressMap] = useState({});
+  const [retryJobId, setRetryJobId] = useState(null);
+  const [retryTimeout, setRetryTimeout] = useState(120);
 
   useEffect(() => {
     loadJobs();
@@ -66,9 +68,10 @@ export default function Jobs() {
     loadJobs();
   }
 
-  async function handleRetry(id) {
+  async function handleRetry(id, newTimeout) {
     try {
-      await retryFailed(id);
+      await retryFailed(id, newTimeout);
+      setRetryJobId(null);
       loadJobs();
     } catch (e) {
       alert('Failed to retry: ' + e.message);
@@ -183,6 +186,48 @@ export default function Jobs() {
         </form>
       )}
 
+      {/* Retry Failed with Timeout Modal */}
+      {retryJobId && (
+        <div className="bg-white rounded-xl shadow-sm p-6 space-y-4 border-2 border-indigo-100">
+          <h3 className="text-lg font-semibold text-gray-800">Retry Failed Calls</h3>
+          <p className="text-sm text-gray-500">
+            Set a longer timeout before retrying failed calls. Current job timeout will be updated.
+          </p>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              New Timeout: {retryTimeout}s (max 300s)
+            </label>
+            <input
+              type="range"
+              min="30"
+              max="300"
+              step="10"
+              className="w-full"
+              value={retryTimeout}
+              onChange={e => setRetryTimeout(parseInt(e.target.value))}
+            />
+            <div className="flex justify-between text-xs text-gray-400 mt-1">
+              <span>30s</span>
+              <span>5 min</span>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleRetry(retryJobId, retryTimeout)}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+            >
+              Retry Failed with {retryTimeout}s Timeout
+            </button>
+            <button
+              onClick={() => setRetryJobId(null)}
+              className="border px-4 py-2 rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="flex justify-center py-12">
           <Loader2 className="animate-spin text-indigo-600" size={32} />
@@ -256,7 +301,7 @@ export default function Jobs() {
                           </button>
                         )}
                         {job.failed > 0 && (
-                          <button onClick={() => handleRetry(job.id)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded" title="Retry Failed">
+                          <button onClick={() => { setRetryJobId(job.id); setRetryTimeout(job.timeout_seconds || 90); }} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded" title="Retry Failed">
                             <RotateCcw size={16} />
                           </button>
                         )}
