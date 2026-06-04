@@ -22,6 +22,7 @@ export const startJob = (id) => API.post(`/jobs/${id}/start`);
 export const stopJob = (id) => API.post(`/jobs/${id}/stop`);
 export const retryFailed = (id, timeoutSeconds) => API.post(`/jobs/${id}/retry-failed`, null, { params: timeoutSeconds ? { timeout_seconds: timeoutSeconds } : {} });
 export const updateJobTimeout = (id, timeoutSeconds) => API.post(`/jobs/${id}/update-timeout`, null, { params: { timeout_seconds: timeoutSeconds } });
+export const recalculateJobStats = (id) => API.post(`/jobs/${id}/recalculate`);
 export const deleteJob = (id) => API.delete(`/jobs/${id}`);
 export const getProgress = (id) => API.get(`/jobs/${id}/progress`);
 

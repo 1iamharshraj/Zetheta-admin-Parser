@@ -151,6 +151,37 @@ def retry_failed(job_id: str, timeout_seconds: Optional[int] = None, db: Session
     return job
 
 
+@router.post("/{job_id}/recalculate", response_model=JobResponse)
+def recalculate_stats(job_id: str, db: Session = Depends(get_db)):
+    """Recalculate job counters from actual API call records."""
+    from sqlalchemy import func
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    counts = db.query(
+        func.count(APICall.id).label('total'),
+        func.sum(APICall.is_success).label('success'),
+        func.count(APICall.id).label('completed'),
+    ).filter(
+        APICall.job_id == job_id,
+        APICall.completed_at.isnot(None)
+    ).first()
+
+    failed = db.query(func.count(APICall.id)).filter(
+        APICall.job_id == job_id,
+        APICall.is_success == False,
+        APICall.completed_at.isnot(None)
+    ).scalar()
+
+    job.processed = counts.completed or 0
+    job.succeeded = counts.success or 0
+    job.failed = failed or 0
+    db.commit()
+    db.refresh(job)
+    return job
+
+
 @router.delete("/{job_id}")
 def delete_job(job_id: str, db: Session = Depends(get_db)):
     job = db.query(Job).filter(Job.id == job_id).first()

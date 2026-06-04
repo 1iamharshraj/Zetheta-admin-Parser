@@ -150,6 +150,10 @@ class JobRunner:
                 if attempt < settings.MAX_RETRIES - 1:
                     time.sleep(2 ** attempt)
 
+        # Track previous state to avoid double-counting job counters on retry
+        was_previously_completed = call.completed_at is not None
+        was_previously_success = call.is_success
+
         call.status_code = status_code
         call.is_success = success
         call.response_body = response_body
@@ -158,11 +162,22 @@ class JobRunner:
         call.attempt_count = attempt + 1
         call.completed_at = datetime.utcnow()
 
-        job.processed += 1
-        if success:
-            job.succeeded += 1
+        if not was_previously_completed:
+            # First-time completion — increment counters normally
+            job.processed += 1
+            if success:
+                job.succeeded += 1
+            else:
+                job.failed += 1
         else:
-            job.failed += 1
+            # Retry of a previously completed call — adjust counters only if outcome changed
+            if was_previously_success and not success:
+                job.succeeded -= 1
+                job.failed += 1
+            elif not was_previously_success and success:
+                job.failed -= 1
+                job.succeeded += 1
+            # If outcome is same, counters stay unchanged
 
         db.commit()
 
