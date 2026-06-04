@@ -46,6 +46,7 @@ class Job(Base):
     started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
     error_message = Column(Text, nullable=True)
+    timeout_seconds = Column(Integer, default=90)
 
     calls = relationship("APICall", back_populates="job", cascade="all, delete-orphan")
 

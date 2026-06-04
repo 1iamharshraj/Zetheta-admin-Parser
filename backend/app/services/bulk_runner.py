@@ -123,7 +123,7 @@ class JobRunner:
                 resp = requests.post(
                     target_url,
                     json=payload,
-                    timeout=settings.CALL_TIMEOUT_SECONDS,
+                    timeout=job.timeout_seconds or settings.CALL_TIMEOUT_SECONDS,
                 )
                 status_code = resp.status_code
 

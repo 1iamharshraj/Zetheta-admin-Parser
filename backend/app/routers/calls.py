@@ -61,7 +61,7 @@ def retry_call(call_id: str, db: Session = Depends(get_db)):
             resp = requests.post(
                 call.job.target_url,
                 json=payload,
-                timeout=settings.CALL_TIMEOUT_SECONDS,
+                timeout=call.job.timeout_seconds or settings.CALL_TIMEOUT_SECONDS,
             )
             status_code = resp.status_code
             if resp.status_code == 200:

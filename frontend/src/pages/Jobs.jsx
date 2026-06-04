@@ -6,7 +6,7 @@ export default function Jobs() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', type: 'tech', filter_mode: 'all', filter_value: '' });
+  const [form, setForm] = useState({ name: '', type: 'tech', filter_mode: 'all', filter_value: '', timeout_seconds: 90 });
   const [progressMap, setProgressMap] = useState({});
 
   useEffect(() => {
@@ -153,6 +153,24 @@ export default function Jobs() {
                 disabled={form.filter_mode === 'all'}
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Timeout: {form.timeout_seconds}s (max 300s)
+              </label>
+              <input
+                type="range"
+                min="30"
+                max="300"
+                step="10"
+                className="w-full"
+                value={form.timeout_seconds}
+                onChange={e => setForm({ ...form, timeout_seconds: parseInt(e.target.value) })}
+              />
+              <div className="flex justify-between text-xs text-gray-400 mt-1">
+                <span>30s</span>
+                <span>5 min</span>
+              </div>
+            </div>
           </div>
           <div className="flex gap-2">
             <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
@@ -179,6 +197,7 @@ export default function Jobs() {
                 <th className="px-4 py-3 text-left font-medium text-gray-600">Status</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-600">Progress</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-600">Filter</th>
+                <th className="px-4 py-3 text-left font-medium text-gray-600">Timeout</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-600">Created</th>
                 <th className="px-4 py-3 text-right font-medium text-gray-600">Actions</th>
               </tr>
@@ -212,6 +231,9 @@ export default function Jobs() {
                     </td>
                     <td className="px-4 py-3 text-gray-500">
                       {job.filter_mode === 'all' ? 'All' : `${job.filter_mode}: ${job.filter_value}`}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {job.timeout_seconds || 90}s
                     </td>
                     <td className="px-4 py-3 text-gray-500">
                       {new Date(job.created_at).toLocaleDateString()}

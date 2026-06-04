@@ -17,6 +17,9 @@ def list_jobs(db: Session = Depends(get_db)):
 
 @router.post("", response_model=JobResponse)
 def create_job(payload: JobCreate, db: Session = Depends(get_db)):
+    # Validate timeout: min 30s, max 300s (5 min)
+    timeout = max(30, min(300, payload.timeout_seconds or 90))
+
     source_url = (
         "https://www.zetheta.com/wp-json/v1/submissions"
         if payload.type == "tech"
@@ -36,6 +39,7 @@ def create_job(payload: JobCreate, db: Session = Depends(get_db)):
         source_url=source_url,
         target_url=target_url,
         status=JobStatus.PENDING,
+        timeout_seconds=timeout,
     )
     db.add(job)
     db.commit()

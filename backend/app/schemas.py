@@ -62,6 +62,7 @@ class JobBase(BaseModel):
     type: str
     filter_mode: str = "all"
     filter_value: Optional[str] = None
+    timeout_seconds: int = 90
 
 
 class JobCreate(JobBase):
@@ -81,6 +82,7 @@ class JobResponse(JobBase):
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     error_message: Optional[str] = None
+    timeout_seconds: int = 90
 
     class Config:
         from_attributes = True
