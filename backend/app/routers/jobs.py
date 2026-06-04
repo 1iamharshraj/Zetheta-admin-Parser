@@ -142,8 +142,9 @@ def retry_failed(job_id: str, timeout_seconds: Optional[int] = None, db: Session
         call.completed_at = None
 
     job.status = JobStatus.RUNNING
-    job.processed -= len(failed_calls)
-    job.failed -= len(failed_calls)
+    # Reset counters: only count succeeded calls as "done", failures will be retried
+    job.processed = job.succeeded
+    job.failed = 0
     db.commit()
 
     runner.start_job(job.id, submissions, job.target_url)

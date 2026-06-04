@@ -63,7 +63,9 @@ class JobRunner:
 
             job.status = JobStatus.RUNNING
             job.started_at = datetime.utcnow()
-            job.total_candidates = len(submissions)
+            # Only set total_candidates on fresh runs, not retries
+            if job.total_candidates == 0:
+                job.total_candidates = len(submissions)
             db.commit()
 
             for idx, submission in enumerate(submissions):
