@@ -48,8 +48,8 @@ npm run dev
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `DATABASE_URL` | `sqlite:///./zetheta_admin.db` | Database connection |
-| `TARGET_URL_TECH` | `http://13.127.165.204:8000/api/zetheta/analyze` | Tech report API |
-| `TARGET_URL_NONTECH` | `http://13.127.165.204:8000/api/v2/zetheta/analyze/document` | Non-tech report API |
+| `TARGET_URL_TECH` | `http://3.111.11.130/api/zetheta/analyze` | Tech report API |
+| `TARGET_URL_NONTECH` | `http://3.111.11.130/api/v2/zetheta/analyze/document` | Non-tech report API |
 | `MAX_CONCURRENT_CALLS` | `3` | Parallel API calls |
 | `CALL_DELAY_SECONDS` | `1.0` | Delay between calls |
 | `MAX_RETRIES` | `3` | Retry attempts for failures |
@@ -67,3 +67,7 @@ npm run dev
 - `POST /api/calls/{id}/retry` — Retry a single call
 - `GET /api/candidates?type=&role=&course=&college=&search=` — List candidates
 - `POST /api/candidates/sync?submission_type=` — Sync from Zetheta
+
+## Monitoring
+
+Production metrics and logs for the Zetheta API/backend are available in Grafana at `http://<your-host>/grafana`. See the centralized [`MONITORING.md`](../MONITORING.md) for details.

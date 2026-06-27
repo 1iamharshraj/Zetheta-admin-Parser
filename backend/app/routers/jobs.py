@@ -26,9 +26,9 @@ def create_job(payload: JobCreate, db: Session = Depends(get_db)):
         else "https://www.zetheta.com/wp-json/v1/submissions/?type=nontech"
     )
     target_url = (
-        "http://13.127.165.204:8000/api/zetheta/analyze"
+        "http://3.111.11.130/api/zetheta/analyze"
         if payload.type == "tech"
-        else "http://13.127.165.204:8000/api/v2/zetheta/analyze/document"
+        else "http://3.111.11.130/api/v2/zetheta/analyze/document"
     )
 
     job = Job(
